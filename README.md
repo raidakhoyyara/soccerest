@@ -1,9 +1,13 @@
-# TUGAS 2
-
+# PBP C 2025
+```
 Nama : Raida Khoyyara
 NPM : 2406495445 
 Kelas : PBP C
+```
 
+<details>
+<summary>Tugas Individu 2</summary>
+# TUGAS 2
 Aplikasi dapat diakses di: https://raida-khoyyara-soccerest.pbp.cs.ui.ac.id/ 
 
 ## Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
@@ -87,3 +91,6 @@ Dokumentasi dan komunitas yang kuat: Dukungan dokumentasi resmi serta komunitas 
 
 ## Apakah ada feedback untuk asisten dosen tutorial 1 yang telah kamu kerjakan sebelumnya
 Asisten dosen sudah sangat membantu dan memudahkan saya dalam memahami alur pembuatan proyek Django dari awal(Thank you so much esp Ka Marla). Saran saya, mungkin akan lebih membantu jika ditambahkan contoh kasus error yang umum terjadi saat praktik dan cara penanganannya.
+</details>
+
+# TUGAS INDIVIDU 3
