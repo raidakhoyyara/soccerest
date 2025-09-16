@@ -189,3 +189,18 @@ http://localhost:8000/xml/[id]/ atau http://localhost:8000/json/[id]/ → data p
 
 
 ### Apakah ada feedback untuk asdos di tutorial 2 yang sudah kalian kerjakan?
+
+### Mengakses keempat URL di poin 2 menggunakan Postman, membuat screenshot dari hasil akses URL pada Postman, dan menambahkannya ke dalam README.md.
+
+1. JSON (Semua Data)
+http://127.0.0.1:8000/xml → endpoint yang balikin data dalam format XML.
+![JSON ALL](JSON.png)
+2. XML (Semua Data)
+http://127.0.0.1:8000/json → endpoint yang balikin data dalam format JSON.
+![XML ALL](XML.png)
+3. JSON (Detail by UUID)
+http://127.0.0.1:8000/json/ddceace3-ab84-4f28-aae0-ad6b5aef72b6 → ambil data detail tertentu (misalnya satu produk/objek) dalam JSON berdasarkan UUID.
+![JSON Detail](JSONDetails.png)
+4. XML (Detail by UUID) 
+http://127.0.0.1:8000/xml/ddceace3-ab84-4f28-aae0-ad6b5aef72b6 → sama kayak nomor 3 tapi formatnya XML.
+![XML Detail](XMLDetails.png)
