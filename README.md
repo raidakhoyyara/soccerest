@@ -111,9 +111,21 @@ Asisten dosen sudah sangat membantu dan memudahkan saya dalam memahami alur pemb
 ## TUGAS INDIVIDU 3
 
 ### Jelaskan mengapa kita memerlukan data delivery dalam pengimplementasian sebuah platform?
+Data delivery penting karena platform itu kan isinya banyak komponen (frontend, backend, database, API, dll). Nah biar semuanya nyambung, kita butuh mekanisme buat nganterin data. Kalau nggak ada data delivery, nanti datanya bisa nyasar, lambat, atau malah nggak sinkron. Intinya data delivery itu kaya kurir, yang pastiin info dari satu sisi (misalnya dari database ke tampilan web/UI).
+
 ### Menurutmu, mana yang lebih baik antara XML dan JSON? Mengapa JSON lebih populer dibandingkan XML?
+Keduanya memiliki kelebihan dan kekurangan masing masing
+XML: detail banget, bisa simpen data kompleks + atribut, tapi verbose/banyak syntaxnya, sulit dibaca, agak berat.
+JSON: simpel, ringan, gampang dibaca, dan udah nyambung sama JavaScript.
+
+Makanya sekarang JSON jauh lebih populer. Soalnya lebih efisien buat komunikasi antar sistem, parsing lebih cepat, dan semua bahasa modern udah dukung JSON. Kalau XML lebih cocok buat dokumen yang super kompleks, tapi di web/API, JSON lebih oke.
+
 ### Jelaskan fungsi dari method is_valid() pada form Django dan mengapa kita membutuhkan method tersebut?
+is_valid() itu buat ngecek input user udah sesuai aturan validasi apa belum. Kalau valid return True dan kita bisa akses datanya lewat cleaned_data. Kalau nggak return False dan error-nya bisa langsung ditampilin di form. Kenapa penting? Biar data yang masuk ke sistem tuh bener, nggak ada yang aneh-aneh (contoh: harga negatif, email kosong, atau input random untuk nyerang sistem).
+
 ### Mengapa kita membutuhkan csrf_token saat membuat form di Django? Apa yang dapat terjadi jika kita tidak menambahkan csrf_token pada form Django? Bagaimana hal tersebut dapat dimanfaatkan oleh penyerang?
+csrf_token itu sejenis keamanan. Jadi setiap kali kita bikin form (misalnya buat login atau nambah produk), kode itu ikut terkirim dan server akan ngecek apakah kodenya cocok sama yang sebelumnya diberikan. Kalau cocok, berarti request memang dari user. Kalau nggak cocok, server langsung nolak karena bisa aja itu dari pihak luar yang berbahaya.
+Tanpa CSRF token, aplikasi bisa kena serangan Cross-Site Request Forgery (CSRF). Misalnya, kita lagi login di aplikasi bank, terus buka website lain yang diam-diam ngirim request transfer uang. Karena nggak ada CSRF token, server bank nggak bisa bedain mana request asli dan palsu, yang bisa aja bikin transaksi jalan tanpa sadar. Jadi, CSRF token adalah lapisan keamanan penting yang memastikan setiap request form benar-benar datang dari user, bukan dari penyerang.
 
 ### Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
 1. Pertama, saya memastikan bahwa struktur repository sudah sesuai.
@@ -186,6 +198,24 @@ http://localhost:8000/xml/[id]/ atau http://localhost:8000/json/[id]/ → data p
 ```
 
 13. Terakhir saya push kode ini ke git dan pws 
+
+14. Pada hari selasa(16/09) Saya menambahkan validasi bahwa input price tidak boleh negatif dengan menambahkan kode: 
+```
+<script>
+  const priceInput = document.getElementById('id_price');
+
+  if (priceInput) {
+    priceInput.addEventListener('input', function() {
+      if (this.value < 0) {
+        this.setCustomValidity('Harga produk tidak boleh negatif.');
+      } else {
+        this.setCustomValidity('');
+      }
+    });
+  }
+</script>
+```
+kode ini berfungsi untuk menampilkan pesan validasi error bahwa price tidak boleh negatif. Lalu push lagi ke pws
 
 
 ### Apakah ada feedback untuk asdos di tutorial 2 yang sudah kalian kerjakan?

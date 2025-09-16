@@ -22,11 +22,8 @@ class Product(models.Model):
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='update')
     product_views = models.PositiveIntegerField(default=0)
     is_featured = models.BooleanField(default=False)
-    price = models.DecimalField(max_digits=12, decimal_places=2)
+    price = models.IntegerField(default=0)
 
-    def clean(self):
-        if self.price < 0:
-            raise ValidationError("Harga tidak boleh negatif")
 
     def __str__(self):
         return self.name
