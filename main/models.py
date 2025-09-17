@@ -4,6 +4,8 @@ from django.db import models
 import uuid
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+
 
 class Product(models.Model):
     CATEGORY_CHOICES = [
@@ -23,7 +25,7 @@ class Product(models.Model):
     product_views = models.PositiveIntegerField(default=0)
     is_featured = models.BooleanField(default=False)
     price = models.IntegerField(default=0)
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.name
