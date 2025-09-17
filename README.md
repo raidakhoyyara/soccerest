@@ -234,3 +234,7 @@ http://127.0.0.1:8000/json/ddceace3-ab84-4f28-aae0-ad6b5aef72b6 → ambil data d
 4. XML (Detail by UUID) 
 http://127.0.0.1:8000/xml/ddceace3-ab84-4f28-aae0-ad6b5aef72b6 → sama kayak nomor 3 tapi formatnya XML.
 ![XML Detail](XMLDetails.png)
+
+
+# TUGAS 4
+## Menambahkan tugas 4
