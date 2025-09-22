@@ -42,11 +42,12 @@
       Views: {{ product.views }}
     </p>
 
-    {% if product.image_url %}
-      <img src="{{ product.image_url }}" alt="{{ product.name }}" width="150" height="100">
+    {% if product.thumbnail %}
+      <img src="{{ product.thumbnail }}" alt="{{ product.name }}" width="150" height="100">
       <br />
     {% endif %}
 
+    
     <p>{{ product.description|truncatewords:25 }}...</p>
 
     <p>
