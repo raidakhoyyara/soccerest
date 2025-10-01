@@ -1,38 +1,140 @@
 {% extends 'base.html' %}
 
 {% block meta %}
-<title>Register</title>
+<title>Register | Soccerest</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+  .btn-primary {
+    @apply bg-[#B22222] hover:bg-[#8B1A1A] text-white font-semibold py-3 px-4 rounded-md transition-colors;
+  }
+  .text-accent {
+    color: #B22222; /* Merah */
+  }
+  .text-accent:hover {
+    color: #8B1A1A;
+  }
+  .text-secondary {
+    color: #0B1440; /* Navy */
+  }
+  .text-gold {
+    color: #D4AF37; /* Gold */
+  }
+</style>
 {% endblock meta %}
 
 {% block content %}
-<div style="max-width: 500px; margin: 0 auto; padding: 20px;">
-  <h1 style="text-align: center; color: #2c3e50;">Register</h1>
-  <p style="text-align: center; color: #7f8c8d;">Buat akun baru untuk mulai belanja di Soccerest.</p>
+<div class="min-h-screen bg-[#F9FAFB] flex items-center justify-center p-8">
+  <div class="max-w-md w-full">
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-lg p-8">
+      
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-secondary mb-2">Join <span class="text-accent">Soccerest</span></h2>
+        <p class="text-gray-600 text-sm">Create your account today ⚽</p>
+      </div>
 
-  <form method="POST" style="margin-top: 20px;">
-    {% csrf_token %}
-    <table style="width: 100%; border-spacing: 10px;">
-      {{ form.as_table }}
-      <tr>
-        <td></td>
-        <td>
-          <input type="submit" name="submit" value="Daftar" 
-                 style="padding: 8px 20px; background-color: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer;" />
-        </td>
-      </tr>
-    </table>
-  </form>
+      <!-- Form Errors Display -->
+      {% if form.non_field_errors %}
+        <div class="mb-6">
+          {% for error in form.non_field_errors %}
+            <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-[#DC2626]">
+              {{ error }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
 
-  {% if messages %}
-  <ul style="margin-top: 15px; color: #e74c3c;">
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
+      {% if form.errors %}
+        <div class="mb-6">
+          {% for field, errors in form.errors.items %}
+            {% if field != '__all__' %}
+              {% for error in errors %}
+                <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-[#DC2626] mb-2">
+                  <strong>{{ field|title }}:</strong> {{ error }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
 
-  <p style="text-align: center; margin-top: 20px;">
-    Already have an account? <a href="{% url 'main:login' %}" style="color: #2980b9;">Login here</a>.
-  </p>
+      <!-- Register Form -->
+      <form method="POST" action="" class="space-y-5">
+        {% csrf_token %}
+        
+        <div>
+          <label for="username" class="block text-sm font-medium text-secondary mb-2">Username</label>
+          <input 
+            id="username" 
+            name="username" 
+            type="text" 
+            required 
+            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-[#B22222] focus:ring-2 focus:ring-[#B22222] transition-colors" 
+            placeholder="Choose a username">
+        </div>
+
+        <div>
+          <label for="password1" class="block text-sm font-medium text-secondary mb-2">Password</label>
+          <input 
+            id="password1" 
+            name="password1" 
+            type="password" 
+            required 
+            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-[#B22222] focus:ring-2 focus:ring-[#B22222] transition-colors" 
+            placeholder="Create a password">
+        </div>
+
+        <div>
+          <label for="password2" class="block text-sm font-medium text-secondary mb-2">Confirm Password</label>
+          <input 
+            id="password2" 
+            name="password2" 
+            type="password" 
+            required 
+            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-[#B22222] focus:ring-2 focus:ring-[#B22222] transition-colors" 
+            placeholder="Confirm your password">
+        </div>
+
+        <button type="submit" class="w-full btn-primary">
+          Create Account
+        </button>
+      </form>
+
+      <!-- Messages Display -->
+      {% if messages %}
+        <div class="mt-6">
+          {% for message in messages %}
+            <div 
+              class="
+                px-4 py-3 rounded-md text-sm border font-medium
+                {% if message.tags == 'success' %}
+                  bg-green-50 border-green-200 text-[#28A745]
+                {% elif message.tags == 'error' %}
+                  bg-red-50 border-red-200 text-[#DC2626]
+                {% else %}
+                  bg-gray-50 border-gray-200 text-gray-700
+                {% endif %}
+              ">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Redirect to Login -->
+      <div class="mt-6 text-center pt-6 border-t border-gray-200">
+        <p class="text-gray-500 text-sm">
+          Already have an account? 
+          <a href="{% url 'main:login' %}" class="text-accent font-semibold hover:underline">
+            Sign In
+          </a>
+        </p>
+      </div>
+
+    </div>
+  </div>
 </div>
 {% endblock content %}

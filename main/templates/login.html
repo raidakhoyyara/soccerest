@@ -1,35 +1,126 @@
 {% extends 'base.html' %}
 
 {% block meta %}
-<title>Login</title>
+<title>Login | Soccerest</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+  /* Primary button style */
+  .btn-primary {
+    @apply bg-[#C1272D] hover:bg-[#8B1A1A] text-white font-semibold py-3 px-4 rounded-md transition-colors;
+  }
+  /* Accent text (links / highlights) */
+  .text-accent {
+    color: #C1272D;
+    transition: color 0.2s ease;
+  }
+  .text-accent:hover {
+    color: #8B1A1A;
+  }
+</style>
 {% endblock meta %}
 
 {% block content %}
-<div class="login">
-  <h1>Login</h1>
+<div class="bg-[#F9FAFB] w-full min-h-screen flex items-center justify-center p-8">
+  <div class="max-w-md w-full">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8 form-style">
+      
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-[#1B2A4D] mb-2">
+          Login to <span class="text-accent">Soccerest</span>
+        </h1>
+        <p class="text-[#7D7D7D] text-sm">Your Greatest Football Shopping Destination ⚽</p>
+      </div>
 
-  <form method="POST">
-    {% csrf_token %}
-    <table>
-      {{ form.as_table }}
-      <tr>
-        <td></td>
-        <td><input class="btn login_btn" type="submit" value="Login" /></td>
-      </tr>
-    </table>
-  </form>
+      <!-- Form Errors Display -->
+      {% if form.non_field_errors %}
+        <div class="mb-6 space-y-2">
+          {% for error in form.non_field_errors %}
+            <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-[#DC2626] font-medium">
+              {{ error }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
 
-  {% if messages %}
-  <ul>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
+      {% if form.errors %}
+        <div class="mb-6 space-y-2">
+          {% for field, errors in form.errors.items %}
+            {% if field != '__all__' %}
+              {% for error in errors %}
+                <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-[#DC2626]">
+                  <strong>{{ field|title }}:</strong> {{ error }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
 
-  <p>
-    Don't have an account yet?  
-    <a href="{% url 'main:register' %}">Register now</a>
-  </p>
+      <!-- Login Form -->
+      <form method="POST" action="" class="space-y-6">
+        {% csrf_token %}
+        
+        <div>
+          <label for="username" class="block text-sm font-medium text-[#1B2A4D] mb-2">Username</label>
+          <input 
+            id="username" 
+            name="username" 
+            type="text" 
+            required 
+            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-[#C1272D] focus:ring-2 focus:ring-[#C1272D] transition-colors" 
+            placeholder="Enter your username">
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-[#1B2A4D] mb-2">Password</label>
+          <input 
+            id="password" 
+            name="password" 
+            type="password" 
+            required 
+            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-[#C1272D] focus:ring-2 focus:ring-[#C1272D] transition-colors" 
+            placeholder="Enter your password">
+        </div>
+
+        <button type="submit" class="w-full btn-primary">
+          Sign In
+        </button>
+      </form>
+
+      <!-- Messages Display -->
+      {% if messages %}
+        <div class="mt-6 space-y-2">
+          {% for message in messages %}
+            <div 
+              class="px-4 py-3 rounded-md text-sm border font-medium
+                {% if message.tags == 'success' %}
+                  bg-green-50 border-green-200 text-[#28A745]
+                {% elif message.tags == 'error' %}
+                  bg-red-50 border-red-200 text-[#DC2626]
+                {% else %}
+                  bg-gray-50 border-gray-200 text-gray-700
+                {% endif %}
+              ">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Register Redirect -->
+      <div class="mt-6 text-center pt-6 border-t border-gray-200">
+        <p class="text-[#7D7D7D] text-sm">
+          Don’t have an account? 
+          <a href="{% url 'main:register' %}" class="text-accent font-semibold hover:underline">
+            Register Now
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock content %}

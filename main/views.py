@@ -20,17 +20,19 @@ def show_main(request):
         product_list = Product.objects.all()
     else:
         product_list = Product.objects.filter(user=request.user)
-
+        
     context = {
         'npm' : '2406495445',
         'name': request.user.username,
         'class': 'PBP C',
         'product_list': product_list,
         'last_login': request.COOKIES.get('last_login', 'Never')
+        
     }
 
     return render(request, "main.html", context)
 
+@login_required(login_url='/login/')
 def create_product(request):
     form = ProductForm(request.POST or None)
 
@@ -112,3 +114,46 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')
     return response
+
+def edit_product(request, id):
+    news = get_object_or_404(Product, pk=id)
+    form = ProductForm(request.POST or None, instance=news)
+    if form.is_valid() and request.method == 'POST':
+        form.save()
+        return redirect('main:show_main')
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "edit_product.html", context)
+
+def delete_product(request, id):
+    product = get_object_or_404(Product, pk=id)
+    product.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
+
+def product_list(request, category=None):
+    if category:
+        products = Product.objects.filter(category__iexact=category)
+    else:
+        products = Product.objects.all()
+    return render(request, "main/product_list.html", {"products": products})
+
+@login_required(login_url='/login')
+def product_by_category_view(request, category_name):
+    category_slug = category_name.lower()
+    filter_type = request.GET.get("filter", "all") 
+    product_list = Product.objects.filter(category=category_slug) 
+    
+    if filter_type == "my":
+        product_list = product_list.filter(user=request.user)
+    
+    context = {
+        'category_name': category_name, # Untuk ditampilkan di template, misal: "Daftar Produk Shoes"
+        'product_list': product_list,
+        'filter_type': category_name, # Bantuan untuk penanda aktif di navbar jika diperlukan
+        'name': request.user.username,
+        'last_login': request.COOKIES.get('last_login', 'Never')
+    }
+    return render(request, "main.html", context)

@@ -237,6 +237,8 @@ http://127.0.0.1:8000/xml/ddceace3-ab84-4f28-aae0-ad6b5aef72b6 → sama kayak no
 ![XML Detail](XMLDetails.png)
 </details>
 
+<details>
+<summary>Tugas Individu 4</summary>
 # TUGAS 4
 ## Apa itu Django AuthenticationForm? Jelaskan juga kelebihan dan kekurangannya.
 AuthenticationForm di Django adalah form bawaan dari Django yang disediakan untuk melakukan proses login user. AuthenticationForm  juga udah built-in dan tinggal dipakai tanpa harus bikin form dari awal.
@@ -573,3 +575,138 @@ python manage.py runserver
 python manage.py shell -c "from django.db import connection; cursor = connection.cursor(); cursor.execute('DROP SCHEMA tugas_individe CASCADE; CREATE SCHEMA tugas_individu;'); print('Schema reset!')"
 ```
 dan migrate ulang langsung di pws. Dan berhasilll
+</details>
+
+## TUGAS 5
+ ### terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
+|Selector Type | Example      | Specificity Value |
+|--------------|--------------|--------------|
+| Universal Selectoir | * | 0, 0, 0, 0 |
+| Element and Pseudo-element |div, p::before | 0, 0, 0, 1 |
+| Class, Pseudo-class, Attribute | .class, :hover, [type="text"] | 0, 0, 1, 0 |
+| Isi Baris 3A | #header | 0, 1, 0, 0 |
+| Inline Styles | <h1 style="color: red;"> | 1, 0, 0, 0 |
+| Important Rule (!important) | color: red !important; | Cell  2 |
+
+Urutannya (dari paling kuat ke paling lemah):
+1. !important (tapi jangan disalahgunakan).
+2. Inline style pada elemen: style="...".
+3. ID selector: #header.
+4. Class / attribute / pseudo-class: .nav, [type="text"], :hover.
+5. Element / pseudo-element: div, p, ::after.
+6. Jika specificity sama, source order (yang muncul paling akhir di stylesheet/di-load terakhir menang).
+
+Cara hitung specificity (ringkas): buat tuple (a,b,c,d)
+a = inline (1 atau 0)
+b = jumlah ID
+c = jumlah class/attribute/pseudo-class
+d = jumlah elemen/pseudo-elemen
+Bandingkan lexicographically.
+
+source = https://www.easycoding.id/blog/urutan-prioritas-selector-css-specificity-panduan-lengkap-untuk-memahami-dan-menggunakan 
+
+ ### responsive design menjadi konsep yang penting dalam pengembangan aplikasi web? Berikan contoh aplikasi yang sudah dan belum menerapkan responsive design, serta jelaskan mengapa!
+ Responsive design penting karena mayoritas pengguna internet sekarang mengakses lewat smartphone. Dengan desain responsif, tampilan website otomatis menyesuaikan ukuran layar, sehingga lebih mudah dibaca, navigasi lebih nyaman, loading lebih cepat, konsisten di semua perangkat, dan juga lebih disukai Google lewat mobile-first indexing. Hasilnya: pengalaman pengguna lebih baik, bounce rate lebih rendah, konversi meningkat, dan brand terlihat lebih profesional.
+
+ ### Jelaskan perbedaan antara margin, border, dan padding, serta cara untuk mengimplementasikan ketiga hal tersebut!
+![BOX MODEL CSS](BoxCSS.png)
+Box model: margin → border → padding → content.
+- Margin: ruang di luar border. Mengatur jarak antar elemen. (Vertical margins dapat collapse.)
+```
+.card { margin: 16px; } /* jarak luar */
+```
+- Border: garis keliling elemen, di antara margin dan padding. Bisa di-styling (width, style, color).
+```
+.card { border: 1px solid #ddd; border-radius: 6px; }
+```
+- Padding: ruang di dalam border sebelum konten. Memberi "napas" kepada isi.
+```
+.card { padding: 12px 16px; }
+```
+Contoh lengkap
+```
+.box {
+  margin: 20px;              /* ruang antar elemen */
+  border: 2px solid #ccc;    /* garis tepi */
+  padding: 12px;             /* ruang isi */
+  width: 300px;              /* ukuran content area */
+}
+```
+
+ ### Jelaskan konsep flex box dan grid layout beserta kegunaannya!
+ Flexbox (one-dimensional)
+- Atur layout pada satu sumbu: baris (row) atau kolom (column).
+- Kuat untuk: navbar, alignment vertical centering, daftar card yang fleksibel, form rows.
+- Properti utama: display:flex; flex-direction; justify-content; align-items; gap; flex-wrap.
+- Contoh:
+```
+.header {
+  display: flex;
+  align-items: center;         /* vertical center */
+  justify-content: space-between;
+  gap: 16px;
+}
+```
+
+Grid (two-dimensional)
+- Atur baris & kolom sekaligus. Cocok untuk layout kompleks: dashboard, gallery, page layout.
+- Properti utama: display:grid; grid-template-columns; grid-template-rows; gap; grid-auto-flow.
+- Contoh:
+```
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 kolom sama rata */
+  gap: 16px;
+}
+```
+
+ ### Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)!
+1. Penambahan Styling dan Tailwind CSS
+Aku memutuskan untuk menggunakan Tailwind CSS CDN untuk styling cepat.
+
+- Integrasi Tailwind dan Struktur Dasar
+Di templates/base.html, saya menambahkan <meta name="viewport"> untuk responsiveness Saya menempatkan script CDN Tailwind di <head> pada base.html agar kelas Tailwind dapat digunakan di seluruh template aplikasi. Saya memuat file global.css (setelah script CDN) menggunakan {% static 'css/global.css' %} dan memastikan tags {% load static %} ada.
+- Styling Global dan Komponen
+Di static/css/global.css, saya menambahkan styling kustom (.form-style) untuk mengatur tampilan input form agar lebih rapi dan memiliki efek fokus yang baik. Saya membuat template navbar.html terpisah yang kemudian di-include di main.html. Navbar ini distyle menggunakan kelas Tailwind untuk menciptakan tampilan fixed, desktop, dan mobile responsive (dengan sedikit JavaScript untuk toggle menu mobile). Saya melakukan refactoring tampilan produk di halaman utama dengan membuat template terpisah card_product.html (menggantikan card_news.html) untuk setiap item produk, memungkinkan styling kartu yang konsisten. Semua template form (seperti login.html, register.html, create_product.html, dan edit_product.html) di-style ulang agar sesuai dengan desain modern menggunakan kelas Tailwind.
+
+2. Implementasi Fitur Edit Product (Update)
+- Membuat View edit_product: 
+Di views.py, saya membuat fungsi edit_product(request, id) yang bertugas: Mengambil objek Product berdasarkan id (get_object_or_404). Membuat form menggunakan ProductForm, menginisiasi dengan data produk yang ada (instance=product). Jika method adalah POST dan form valid, ia menyimpan perubahan dan mengarahkannya kembali ke halaman utama (show_main).
+- Membuat Template edit_product.html 
+Saya membuat file edit_product.html untuk menampung form pengeditan produk dengan styling yang seragam (memanfaatkan kelas dari global.css).
+- Menambahkan URL Path
+Di urls.py, saya menambahkan path untuk view ini:
+```
+path('product/edit/<str:id>/', edit_product, name='edit_product'),
+```
+- Menampilkan Tombol Edit
+Di main.html (tepatnya di dalam loop yang menampilkan produk), saya menambahkan tombol Edit yang hanya akan muncul jika user sedang authenticated DAN produk tersebut adalah milik user yang sedang login ({% if user.is_authenticated and product.user == user %}).
+
+3. Implementasi Fitur Hapus Product (Delete)
+
+Saya menambahkan fungsionalitas untuk menghapus produk, yang juga direstriksi hanya untuk pemilik produk.
+
+- Membuat View delete_product
+Di views.py, saya membuat fungsi delete_product(request, id):
+Mengambil objek Product berdasarkan id. Memanggil product.delete() untuk menghapus data.Mengembalikan user ke halaman utama (show_main) menggunakan HttpResponseRedirect(reverse(...)).
+- Menambahkan URL Path
+Di urls.py, saya menambahkan path untuk view ini:
+```
+path('product/delete/<str:id>/', delete_product, name='delete_product'),
+```
+- Menampilkan Tombol Delete
+Tombol Delete ditambahkan di main.html di samping tombol Edit, menggunakan kondisi user yang sama ({% if user.is_authenticated and product.user == user %}).
+
+4. Penambahan Fitur Filter Kategori 
+Sebagai ekstensi, saya mengimplementasikan pemfilteran produk berdasarkan kategori, mengintegrasikannya dengan fitur filter "All Product" vs "My Product" dari Tugas 4.
+-  Membuat View product_by_category_view
+Saya membuat fungsi product_by_category_view(request, category_name) di views.py.
+Fungsi ini memiliki two-stage filtering:
+Tahap Utama: Filter semua produk berdasarkan category_slug (huruf kecil dari category_name URL).
+Tahap Sekunder: Jika parameter URL ?filter=my ada, hasil query disaring lagi berdasarkan user=request.user. Jika ?filter=all (default), semua produk di kategori tersebut ditampilkan.
+- Modifikasi Navbar dan Link Filter
+Di navbar.html, semua link kategori (Shoes, Jersey, dsb.) diperbarui untuk memanggil {% url 'main:product_by_category' 'kategori_kecil' %}.
+Di main.html, link "All Product" dan "My Product" dimodifikasi menggunakan href="{{ request.path }}?filter=..." untuk memastikan tombol filter mempertahankan konteks kategori yang sedang aktif (misalnya, dari /category/shoes/ menjadi /category/shoes/?filter=my).
+
+Hasil
+Semua fitur CRUD dan styling berfungsi penuh. Filter kategori berhasil terintegrasi dengan filter user, memungkinkan user untuk melihat "Semua Jersey" atau "Jersey Milik Saya" tanpa error.
