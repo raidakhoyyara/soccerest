@@ -138,13 +138,13 @@ class SoccerestFunctionalTest(LiveServerTestCase):
         self.login_user()
 
         # cek filter All
-        all_button = self.browser.find_element(By.XPATH, "//button[contains(text(), 'All Articles')]")
+        all_button = self.browser.find_element(By.XPATH, "//button[contains(text(), 'All Product')]")
         all_button.click()
         self.assertIn("My Test Product", self.browser.page_source)
         self.assertIn("Other User Product", self.browser.page_source)
 
         # cek filter My
-        my_button = self.browser.find_element(By.XPATH, "//button[contains(text(), 'My Articles')]")
+        my_button = self.browser.find_element(By.XPATH, "//button[contains(text(), 'My Product')]")
         my_button.click()
         self.assertIn("My Test Product", self.browser.page_source)
 

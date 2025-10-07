@@ -577,6 +577,9 @@ python manage.py shell -c "from django.db import connection; cursor = connection
 dan migrate ulang langsung di pws. Dan berhasilll
 </details>
 
+
+<details>
+<summary>Tugas Individu 5</summary>
 ## TUGAS 5
  ### terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
 |Selector Type | Example      | Specificity Value |
@@ -710,3 +713,9 @@ Di main.html, link "All Product" dan "My Product" dimodifikasi menggunakan href=
 
 Hasil
 Semua fitur CRUD dan styling berfungsi penuh. Filter kategori berhasil terintegrasi dengan filter user, memungkinkan user untuk melihat "Semua Jersey" atau "Jersey Milik Saya" tanpa error.
+</details>
+
+
+## TUGAS 6
+
+
