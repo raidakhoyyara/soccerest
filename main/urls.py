@@ -7,13 +7,15 @@ from main.views import edit_product
 from main.views import delete_product
 from main.views import product_by_category_view
 from main.views import add_product_entry_ajax
+from main.views import delete_items_ajax
+from main.views import edit_items_ajax
 
 app_name = 'main'
 
 urlpatterns = [
     path('', show_main, name='show_main'),
     path('product/create/', create_product, name='create_product'),
-    path('product/<str:id>/', show_product, name='show_product'),
+    path('product/<uuid:id>/', show_product, name='show_product'),
     path('xml/', show_xml, name='show_xml'),
     path('json/', show_json, name='show_json'),
     path('xml/<str:product_id>/', show_xml_by_id, name='show_xml_by_id'),
@@ -25,4 +27,6 @@ urlpatterns = [
     path('product/delete/<str:id>/', delete_product, name='delete_product'),
     path('category/<str:category_name>/', product_by_category_view, name='product_by_category'), 
     path('create-product-ajax', add_product_entry_ajax, name='add_product_entry_ajax'),
+    path('edit-ajax/<str:item_id>/', edit_items_ajax, name='edit_items_ajax'), 
+    path('delete-ajax/<str:item_id>/', delete_items_ajax, name='delete_items_ajax'), 
 ]

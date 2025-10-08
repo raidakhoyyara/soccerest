@@ -1,20 +1,20 @@
 from decimal import Decimal
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core import serializers
 from django.shortcuts import render, redirect, get_object_or_404
+# Pastikan Anda sudah mengimpor ProductForm dari file forms.py
 from main.forms import ProductForm
+# Pastikan Anda sudah mengimpor model Product
 from main.models import Product
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 import datetime
-from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 from django.utils.html import strip_tags
 
 @login_required(login_url='/login')
@@ -24,6 +24,7 @@ def show_main(request):
     if filter_type == "all":
         product_list = Product.objects.all()
     else:
+        # Hanya tampilkan produk milik user yang sedang login
         product_list = Product.objects.filter(user=request.user)
         
     context = {
@@ -45,6 +46,7 @@ def create_product(request):
         product_entry = form.save(commit = False)
         product_entry.user = request.user
         product_entry.save()
+        messages.success(request, "Product successfully created!")
         return redirect('main:show_main')
 
     context = {'form': form}
@@ -53,7 +55,8 @@ def create_product(request):
 @login_required(login_url='/login')
 def show_product(request, id):
     product = get_object_or_404(Product, pk=id)
-    product.increment_views()
+    # Asumsi model Product memiliki method increment_views()
+    product.increment_views() 
 
     context = {
         'product': product
@@ -67,7 +70,7 @@ def show_xml(request):
      return HttpResponse(xml_data, content_type="application/xml")
  
 def show_json(request):
-    product_list = Product.objects.all()
+    product_list = Product.objects.all().order_by('-created_at') # Order by newest first
     data = [
         {
             'id': str(product.id),
@@ -134,6 +137,7 @@ def login_user(request):
             login(request, user)
             response = HttpResponseRedirect(reverse("main:show_main"))
             response.set_cookie('last_login', str(datetime.datetime.now()))
+            messages.success(request, f'Welcome back, {user.username}!')
             return response
     else:
         form = AuthenticationForm(request)
@@ -144,24 +148,42 @@ def logout_user(request):
     logout(request)
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')
+    messages.info(request, 'You have been logged out.')
     return response
 
+@login_required(login_url='/login')
 def edit_product(request, id):
     product = get_object_or_404(Product, pk=id)
+    
+    # Tambahkan verifikasi kepemilikan
+    if product.user != request.user:
+        messages.error(request, "You are not authorized to edit this product.")
+        return redirect('main:show_main')
+        
     form = ProductForm(request.POST or None, instance=product)
     if form.is_valid() and request.method == 'POST':
         form.save()
+        messages.success(request, "Product successfully updated!")
         return redirect('main:show_main')
 
     context = {
-        'form': form
+        'form': form,
+        'product': product
     }
 
     return render(request, "edit_product.html", context)
 
+@login_required(login_url='/login')
 def delete_product(request, id):
     product = get_object_or_404(Product, pk=id)
+    
+    # Tambahkan verifikasi kepemilikan
+    if product.user != request.user:
+        messages.error(request, "You are not authorized to delete this product.")
+        return redirect('main:show_main')
+        
     product.delete()
+    messages.success(request, "Product successfully deleted!")
     return HttpResponseRedirect(reverse('main:show_main'))
 
 def product_list(request, category=None):
@@ -181,40 +203,94 @@ def product_by_category_view(request, category_name):
         product_list = product_list.filter(user=request.user)
     
     context = {
-        'category_name': category_name, # Untuk ditampilkan di template, misal: "Daftar Produk Shoes"
+        'category_name': category_name,
         'product_list': product_list,
-        'filter_type': category_name, # Bantuan untuk penanda aktif di navbar jika diperlukan
+        'filter_type': category_name,
         'name': request.user.username,
         'last_login': request.COOKIES.get('last_login', 'Never')
     }
     return render(request, "main.html", context)
 
+# ----------------------------------------------------------------------
+# AJAX Endpoints
+# ----------------------------------------------------------------------
+
+@login_required
 @csrf_exempt
 @require_POST
 def add_product_entry_ajax(request):
-    name = strip_tags(request.POST.get("name")) # strip HTML tags!
-    description = strip_tags(request.POST.get("description")) # strip HTML tags!
-    price_str = request.POST.get("price")
-    try:
-        # Konversi ke tipe data yang sesuai (misalnya Decimal atau Integer/Float)
-        price = Decimal(price_str) if price_str else Decimal('0.00')
-    except:
-        price = Decimal('0.00')
-    category = request.POST.get("category")
-    thumbnail = request.POST.get("thumbnail")
-    is_featured = request.POST.get("is_featured") == 'on'  # checkbox handling
-    user = request.user
-
-    new_product = Product(
-        name=name, 
-        description=description,
-        category=category,
-        thumbnail=thumbnail,
-        price = price,
-        is_featured=is_featured,
-        user=user
+    """Menambah produk baru melalui AJAX."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"status": "error", "message": "Authentication required."}, status=401)
         
-    )
-    new_product.save()
+    # Gunakan ProductForm untuk validasi dan sanitasi awal
+    form = ProductForm(request.POST)
 
-    return HttpResponse(b"CREATED", status=201)
+    if form.is_valid():
+        product_entry = form.save(commit=False)
+        product_entry.user = request.user
+        product_entry.save()
+        # Mengembalikan JSON sukses
+        return JsonResponse({"status": "created", "message": "Product successfully created!", "product_id": str(product_entry.id)}, status=201)
+    else:
+        # Mengembalikan pesan error validasi
+        errors = dict(form.errors.items())
+        # Kita hanya mengambil pesan error pertama dari setiap field
+        error_messages = ", ".join([f"{k}: {v[0]}" for k, v in errors.items()])
+        return JsonResponse({"status": "error", "message": f"Validation failed: {error_messages}"}, status=400)
+    
+    
+@login_required
+@csrf_exempt
+@require_POST
+def delete_items_ajax(request, item_id):
+    """Menghapus produk melalui AJAX."""
+    try:
+        # Cari produk. Jika tidak ada, raise 404
+        product = get_object_or_404(Product, pk=item_id)
+        
+        # Verifikasi kepemilikan
+        if product.user != request.user:
+            return JsonResponse({"status": "error", "message": "You are not authorized to delete this product."}, status=403)
+        
+        product.delete()
+        
+        return JsonResponse({"status": "deleted", "message": "Product successfully deleted!"}, status=200)
+
+    except Product.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Product not found."}, status=404)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": f"An unexpected error occurred: {str(e)}"}, status=500)
+    
+    
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def edit_items_ajax(request, item_id):
+    """Mengedit produk melalui AJAX."""
+    try:
+        product = get_object_or_404(Product, pk=item_id)
+        
+        # Verifikasi kepemilikan
+        if product.user != request.user:
+            return JsonResponse({"status": "error", "message": "You are not authorized to edit this product."}, status=403)
+
+        # Gunakan ProductForm untuk validasi data
+        form = ProductForm(request.POST, instance=product)
+        
+        if form.is_valid():
+            product_entry = form.save(commit=False)
+            product_entry.save()
+
+            # Mengembalikan JSON sukses
+            return JsonResponse({"status": "updated", "message": "Product successfully updated!"}, status=200)
+        else:
+            # Jika form tidak valid, kembalikan pesan error
+            errors = dict(form.errors.items())
+            error_messages = ", ".join([f"{k}: {v[0]}" for k, v in errors.items()])
+            return JsonResponse({"status": "error", "message": f"Validation failed: {error_messages}"}, status=400)
+
+    except Product.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Product not found."}, status=404)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": f"An unexpected error occurred: {str(e)}"}, status=500)

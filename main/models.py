@@ -27,7 +27,7 @@ class Product(models.Model):
     is_featured = models.BooleanField(default=False)
     price = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-
+    created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
     
