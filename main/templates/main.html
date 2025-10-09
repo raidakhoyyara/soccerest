@@ -19,18 +19,18 @@
 
     <!-- Filter Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-      <div class="flex space-x-3 mb-4 sm:mb-0">
-          <a href="{{ request.path }}?filter=all" 
-          id="filter-all"
-            class="{% if request.GET.filter == 'all' or not request.GET.filter %} bg-[#B22222] text-white {% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#B22222] hover:text-white">
-            All Product
-          </a>
-          <a href="{{ request.path }}?filter=my" 
-            id="filter-my"
-            class="{% if request.GET.filter == 'my' %} bg-[#B22222] text-white {% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#B22222] hover:text-white">
-            My Product
-          </a>
-      </div>
+      <div class="flex items-center space-x-3 mb-4 sm:mb-0">
+            <a href="{{ request.path }}?filter=all" id="filter-all" class="...">
+                All Product
+            </a>
+            <a href="{{ request.path }}?filter=my" id="filter-my" class="...">
+                My Product
+            </a>
+
+            <button id="refresh-btn" class="bg-white text-gray-700 border border-gray-300 rounded-md w-9 h-9 flex items-center justify-center font-bold text-sm transition-colors hover:bg-gray-100" title="Refresh Products">
+                Refresh
+            </button>
+        </div>
       {% if user.is_authenticated %}
       <div class="text-sm text-gray-500">
         Last login: {{ last_login }}
@@ -199,6 +199,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const showAllProductButton = document.getElementById('filter-all');
     const showMyProductButton = document.getElementById('filter-my');
     const productForm = document.getElementById('productForm');
+
+    const refreshButton = document.getElementById('refresh-btn');
 
     let activeFilter = '{{ request.GET.filter|default:"all" }}';
     let allProductData = [];
@@ -402,6 +404,7 @@ if (successMessage) {
         e.preventDefault();
     });
 
+    
     document.getElementById('confirmDeleteBtn')?.addEventListener('click', handleConfirmDelete);
     
     const cancelDeleteButtons = document.querySelectorAll('[onclick="hideDeleteModal()"]');
@@ -411,6 +414,27 @@ if (successMessage) {
         if (event.target.classList.contains('delete-btn')) {
             const productId = event.target.getAttribute('data-product-id');
             showDeleteModal(productId);
+        }
+    });
+
+    refreshButton?.addEventListener('click', (e) => {
+        e.preventDefault(); 
+        const icon = refreshButton.querySelector('svg');
+        if (icon) { 
+            icon.classList.add('animate-spin'); // Efek visual
+        
+            // AJAX
+            fetchProductFromServer().finally(() => {
+                setTimeout(() => icon.classList.remove('animate-spin'), 500);
+            });
+        } else {
+            // Fallback jika tombolnya berupa teks (bukan icon)
+            refreshButton.disabled = true;
+            refreshButton.classList.add('opacity-50', 'cursor-not-allowed');
+            fetchProductFromServer().finally(() => {
+                refreshButton.disabled = false;
+                refreshButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
         }
     });
     updateFilterButtons(); 
