@@ -30,6 +30,9 @@
             class="{% if request.GET.filter == 'my' %} bg-[#B22222] text-white {% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#B22222] hover:text-white">
             My Product
           </a>
+          <button id="refresh-btn" class="bg-white text-gray-700 border border-gray-300 rounded-md w-9 h-9 flex items-center justify-center font-bold text-sm transition-colors hover:bg-gray-100" title="Refresh Products">
+            Rrfresh
+        </button>
       </div>
       {% if user.is_authenticated %}
       <div class="text-sm text-gray-500">
@@ -199,6 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const showAllProductButton = document.getElementById('filter-all');
     const showMyProductButton = document.getElementById('filter-my');
     const productForm = document.getElementById('productForm');
+    const refreshButton = document.getElementById('refresh-btn');
 
     let activeFilter = '{{ request.GET.filter|default:"all" }}';
     let allProductData = [];
@@ -413,6 +417,28 @@ if (successMessage) {
             showDeleteModal(productId);
         }
     });
+
+    refreshButton?.addEventListener('click', (e) => {
+        e.preventDefault(); // Mencegah perilaku default
+        const icon = refreshButton.querySelector('svg');
+        if (icon) { // Pengecekan agar tidak error jika icon tidak ada
+            icon.classList.add('animate-spin'); // Efek visual
+        
+            // INTI DARI AJAX ADA DI SINI
+            fetchProductFromServer().finally(() => {
+                setTimeout(() => icon.classList.remove('animate-spin'), 500);
+            });
+        } else {
+            // Fallback jika tombolnya berupa teks (bukan icon)
+            refreshButton.disabled = true;
+            refreshButton.classList.add('opacity-50', 'cursor-not-allowed');
+            fetchProductFromServer().finally(() => {
+                refreshButton.disabled = false;
+                refreshButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
+        }
+    });
+
     updateFilterButtons(); 
     fetchProductFromServer();
 });
