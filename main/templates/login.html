@@ -91,26 +91,6 @@
         </button>
       </form>
 
-      <!-- Messages Display -->
-      {% if messages %}
-        <div class="mt-6 space-y-2">
-          {% for message in messages %}
-            <div 
-              class="px-4 py-3 rounded-md text-sm border font-medium
-                {% if message.tags == 'success' %}
-                  bg-green-50 border-green-200 text-[#28A745]
-                {% elif message.tags == 'error' %}
-                  bg-red-50 border-red-200 text-[#DC2626]
-                {% else %}
-                  bg-gray-50 border-gray-200 text-gray-700
-                {% endif %}
-              ">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
       <!-- Register Redirect -->
       <div class="mt-6 text-center pt-6 border-t border-gray-200">
         <p class="text-[#7D7D7D] text-sm">
@@ -124,3 +104,48 @@
   </div>
 </div>
 {% endblock content %}
+
+<script>
+document.getElementById('login-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const formData = new FormData(form);
+    const errorContainer = document.getElementById('form-errors');
+    errorContainer.innerHTML = ''; // Bersihkan error sebelumnya
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest', 
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) { 
+            if (data.status === 'success') {
+                // Redirect ke halaman utama jika login berhasil
+                window.location.href = data.redirect_url;
+            }
+        } else { 
+            if (data.status === 'error' && data.errors) {
+                const errors = JSON.parse(data.errors);
+                // Menampilkan error non-field
+                if (errors.__all__) {
+                    errors.__all__.forEach(err => {
+                        const errorElement = `<div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700">${err.message}</div>`;
+                        errorContainer.innerHTML += errorElement;
+                    });
+                }
+            }
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        const errorElement = `<div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700">An unexpected error occurred. Please try again.</div>`;
+        errorContainer.innerHTML = errorElement;
+    }
+});
+</script>

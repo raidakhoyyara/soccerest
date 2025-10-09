@@ -9,21 +9,19 @@
 <div class="bg-gray-50 w-full min-h-screen">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
-    <!-- Back Navigation -->
     <div class="mb-6">
       <a href="{% url 'main:show_main' %}" class="text-amber-600 hover:text-amber-800 font-medium transition-colors">
         ← Back to Product
       </a>
     </div>
     
-    <!-- Form -->
     <div class="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 form-style">
       <div class="mb-8">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Edit Product</h1>
         <p class="text-gray-600">Update your product and stories</p>
       </div>
       
-      <form method="POST" class="space-y-6">
+      <form method="POST" id="editProductForm" class="space-y-6">
         {% csrf_token %}
         {% for field in form %}
           <div>
@@ -46,7 +44,7 @@
           <a href="{% url 'main:show_main' %}" class="order-2 sm:order-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors text-center">
             Cancel
           </a>
-          <button type="submit" class="order-1 sm:order-2 flex-1 bg-green-600 text-white px-6 py-3 rounded-md font-medium hover:bg-green-700 transition-colors">
+          <button type="submit" class="order-1 sm:order-2 flex-1 bg-red-600 text-white px-6 py-3 rounded-md font-medium hover:bg-red-700 transition-colors">
             Update Product
           </button>
         </div>
@@ -54,4 +52,43 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('editProductForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const url = "{% url 'main:edit_product_ajax' form.instance.id %}";
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    sessionStorage.setItem('successMessage', data.message);
+                    window.location.href = data.redirect_url;
+                } else {
+                    console.error('Update failed:', data.message);
+                    alert('Gagal memperbarui produk. Silakan coba lagi!');
+                }
+            } catch (error) {
+                console.error('An error occurred:', error);
+                alert('Terjadi kesalahan. Silakan coba lagi.');
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -16,6 +16,51 @@
     {% block content %}
     {% endblock content %}
     {% include 'toast.html' %}
-    {% include 'modal.html' %}
+    <script>
+    // Fungsi utama untuk menampilkan notifikasi toast (TETAP SAMA)
+    function showToast(title, message, type = 'info') {
+        const toast = document.getElementById('toast-component');
+        const toastTitle = document.getElementById('toast-title');
+        const toastMessage = document.getElementById('toast-message');
+        const toastIcon = document.getElementById('toast-icon');
+
+        if (!toast || !toastTitle || !toastMessage || !toastIcon) return;
+
+        toastTitle.textContent = title;
+        toastMessage.textContent = message;
+
+        toast.classList.remove('bg-green-100', 'border-green-400', 'text-green-800', 'bg-red-100', 'border-red-400', 'text-red-800', 'bg-blue-100', 'border-blue-400', 'text-blue-800');
+        
+        if (type === 'success') {
+            toast.classList.add('bg-green-100', 'border-green-400', 'text-green-800');
+            toastIcon.innerHTML = '✅';
+        } else if (type === 'error') {
+            toast.classList.add('bg-red-100', 'border-red-400', 'text-red-800');
+            toastIcon.innerHTML = '❌';
+        } else {
+            toast.classList.add('bg-blue-100', 'border-blue-400', 'text-blue-800');
+            toastIcon.innerHTML = 'ℹ️';
+        }
+
+        toast.classList.remove('opacity-0', 'translate-y-64');
+        toast.classList.add('opacity-100', 'translate-y-0');
+
+        setTimeout(() => {
+            toast.classList.remove('opacity-100', 'translate-y-0');
+            toast.classList.add('opacity-0', 'translate-y-64');
+        }, 5000);
+    }
+  document.addEventListener('DOMContentLoaded', function() {
+      {% if messages %}
+          {% for message in messages %}
+              showToast(
+                  "{{ message.tags|capfirst }}", 
+                  "{{ message|escapejs }}", 
+                  "{{ message.tags }}"
+              );
+          {% endfor %}
+      {% endif %}
+  });
+  </script>
   </body>
 </html>

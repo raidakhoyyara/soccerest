@@ -2,9 +2,7 @@ from decimal import Decimal
 from django.http import HttpResponse, JsonResponse
 from django.core import serializers
 from django.shortcuts import render, redirect, get_object_or_404
-# Pastikan Anda sudah mengimpor ProductForm dari file forms.py
 from main.forms import ProductForm
-# Pastikan Anda sudah mengimpor model Product
 from main.models import Product
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
@@ -16,6 +14,7 @@ from django.http import HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 from django.utils.html import strip_tags
+
 
 @login_required(login_url='/login')
 def show_main(request):
@@ -123,8 +122,19 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
+            # cek ajax bukan
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'success', 'message': 'Account created successfully! Please log in.'})
+            # Fallback untuk non-AJAX
             messages.success(request, 'Your account has been successfully created!')
             return redirect('main:login')
+        else:
+            # Jika form tidak valid dan ini request AJAX, kirim error sebagai JSON
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+    else:
+        form = UserCreationForm()
+        
     context = {'form':form}
     return render(request, 'register.html', context)
 
@@ -238,59 +248,106 @@ def add_product_entry_ajax(request):
         # Kita hanya mengambil pesan error pertama dari setiap field
         error_messages = ", ".join([f"{k}: {v[0]}" for k, v in errors.items()])
         return JsonResponse({"status": "error", "message": f"Validation failed: {error_messages}"}, status=400)
-    
-    
-@login_required
-@csrf_exempt
-@require_POST
-def delete_items_ajax(request, item_id):
-    """Menghapus produk melalui AJAX."""
-    try:
-        # Cari produk. Jika tidak ada, raise 404
-        product = get_object_or_404(Product, pk=item_id)
-        
-        # Verifikasi kepemilikan
-        if product.user != request.user:
-            return JsonResponse({"status": "error", "message": "You are not authorized to delete this product."}, status=403)
-        
-        product.delete()
-        
-        return JsonResponse({"status": "deleted", "message": "Product successfully deleted!"}, status=200)
 
-    except Product.DoesNotExist:
-        return JsonResponse({"status": "error", "message": "Product not found."}, status=404)
-    except Exception as e:
-        return JsonResponse({"status": "error", "message": f"An unexpected error occurred: {str(e)}"}, status=500)
-    
-    
-@login_required
 @csrf_exempt
-@require_http_methods(["POST"])
-def edit_items_ajax(request, item_id):
-    """Mengedit produk melalui AJAX."""
-    try:
-        product = get_object_or_404(Product, pk=item_id)
-        
-        # Verifikasi kepemilikan
-        if product.user != request.user:
-            return JsonResponse({"status": "error", "message": "You are not authorized to edit this product."}, status=403)
-
-        # Gunakan ProductForm untuk validasi data
-        form = ProductForm(request.POST, instance=product)
-        
+def create_product_ajax(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
         if form.is_valid():
-            product_entry = form.save(commit=False)
-            product_entry.save()
-
-            # Mengembalikan JSON sukses
-            return JsonResponse({"status": "updated", "message": "Product successfully updated!"}, status=200)
+            product = form.save(commit=False)
+            product.user = request.user
+            product.save()
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Product created successfully!',
+                'redirect_url': reverse('main:show_main')
+            })
         else:
-            # Jika form tidak valid, kembalikan pesan error
-            errors = dict(form.errors.items())
-            error_messages = ", ".join([f"{k}: {v[0]}" for k, v in errors.items()])
-            return JsonResponse({"status": "error", "message": f"Validation failed: {error_messages}"}, status=400)
+            return JsonResponse({'status': 'error', 'errors': form.errors.as_json()}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
-    except Product.DoesNotExist:
-        return JsonResponse({"status": "error", "message": "Product not found."}, status=404)
+@login_required
+def get_product_json(request, id):
+    """Mengambil detail satu produk dalam format JSON."""
+    product = get_object_or_404(Product, id=id)
+    
+    # Pastikan hanya pemilik produk yang bisa mengambil datanya
+    if product.user != request.user:
+        return JsonResponse({"status": "error", "message": "You are not authorized."}, status=403)
+
+    data = {
+        "name": product.name,
+        "price": product.price,
+        "description": product.description,
+        "category": product.category,
+        "thumbnail": product.thumbnail,
+    }
+    return JsonResponse(data)
+
+    
+@login_required
+@require_POST
+@csrf_exempt
+def edit_product_ajax(request, id):
+    """Memperbarui produk melalui AJAX."""
+    product = get_object_or_404(Product, id=id)
+
+    if product.user != request.user:
+        return JsonResponse({"status": "error", "message": "You are not authorized to edit this product."}, status=403)
+    
+    form = ProductForm(request.POST, instance=product)
+
+    if form.is_valid():
+        form.save()
+        return JsonResponse({
+            "status": "success", 
+            "message": "Product updated successfully!",
+            "redirect_url": reverse('main:show_main') 
+        }, status=200)
+    else:
+        errors = form.errors.as_json()
+        return JsonResponse({"status": "error", "message": "Validation failed", "errors": errors}, status=400)
+    
+@require_POST 
+def delete_product_ajax(request, id):
+    try:
+        product = get_object_or_404(Product, pk=id)
+        # Optional: Periksa apakah user yang request adalah pemilik produk
+        if product.user != request.user:
+            return JsonResponse({'status': 'error', 'message': 'You are not authorized to delete this product.'}, status=403)
+            
+        product.delete()
+        return JsonResponse({'status': 'success', 'message': 'Product has been deleted.'})
     except Exception as e:
-        return JsonResponse({"status": "error", "message": f"An unexpected error occurred: {str(e)}"}, status=500)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)   
+            
+
+@csrf_exempt
+def login_ajax(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            response_data = {
+                'status': 'success',
+                'message': 'Login successful!',
+                'redirect_url': reverse('main:show_main')
+            }
+            response = JsonResponse(response_data)
+            response.set_cookie('last_login', str(datetime.datetime.now()), path='/')
+            return response
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors.as_json()}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def register_ajax(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'status': 'success', 'message': 'Account created successfully! You can now log in.'})
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors.as_json()}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)

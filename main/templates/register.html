@@ -103,27 +103,6 @@
         </button>
       </form>
 
-      <!-- Messages Display -->
-      {% if messages %}
-        <div class="mt-6">
-          {% for message in messages %}
-            <div 
-              class="
-                px-4 py-3 rounded-md text-sm border font-medium
-                {% if message.tags == 'success' %}
-                  bg-green-50 border-green-200 text-[#28A745]
-                {% elif message.tags == 'error' %}
-                  bg-red-50 border-red-200 text-[#DC2626]
-                {% else %}
-                  bg-gray-50 border-gray-200 text-gray-700
-                {% endif %}
-              ">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
       <!-- Redirect to Login -->
       <div class="mt-6 text-center pt-6 border-t border-gray-200">
         <p class="text-gray-500 text-sm">
@@ -137,4 +116,34 @@
     </div>
   </div>
 </div>
+{% include 'toast.html' %}
 {% endblock content %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Definisikan class Tailwind yang ingin diterapkan
+    const tailwindInputClasses = "w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors";
+
+    // Ambil semua elemen <input> di dalam form registrasi
+    const inputs = document.querySelectorAll('#register-form input');
+
+    // Terapkan class ke setiap input
+    inputs.forEach(input => {
+        input.className = tailwindInputClasses;
+        // Tambahkan placeholder berdasarkan nama field
+        if (input.name === 'username') {
+            input.placeholder = 'Choose a username';
+        } else if (input.name === 'password1') {
+            input.placeholder = 'Create a password';
+        } else if (input.name === 'password2') {
+            input.placeholder = 'Confirm your password';
+        }
+    });
+
+    // Menghilangkan label dan <br> bawaan Django yang berantakan
+    const formContainer = document.querySelector('#register-form');
+    formContainer.querySelectorAll('label, br').forEach(element => {
+        element.remove();
+    });
+});
+</script>

@@ -7,8 +7,10 @@ from main.views import edit_product
 from main.views import delete_product
 from main.views import product_by_category_view
 from main.views import add_product_entry_ajax
-from main.views import delete_items_ajax
-from main.views import edit_items_ajax
+from main.views import edit_product_ajax
+from main.views import get_product_json
+from main.views import create_product_ajax
+from main.views import login_ajax, register_ajax, delete_product_ajax
 
 app_name = 'main'
 
@@ -19,14 +21,17 @@ urlpatterns = [
     path('xml/', show_xml, name='show_xml'),
     path('json/', show_json, name='show_json'),
     path('xml/<str:product_id>/', show_xml_by_id, name='show_xml_by_id'),
-    path('json/<str:product_id>/', show_json_by_id, name='show_json_by_id'),
+    path('json/<uuid:product_id>/', show_json_by_id, name='show_json_by_id'),
     path('register/', register, name='register'),
     path('login/', login_user, name='login'),
     path('logout/', logout_user, name='logout'), 
     path('product/edit/<str:id>/', edit_product, name='edit_product'),
     path('product/delete/<str:id>/', delete_product, name='delete_product'),
     path('category/<str:category_name>/', product_by_category_view, name='product_by_category'), 
-    path('create-product-ajax', add_product_entry_ajax, name='add_product_entry_ajax'),
-    path('edit-ajax/<str:item_id>/', edit_items_ajax, name='edit_items_ajax'), 
-    path('delete-ajax/<str:item_id>/', delete_items_ajax, name='delete_items_ajax'), 
+    path('create-product-ajax', create_product_ajax, name='create_product_ajax'),
+    path('edit-product-ajax/<uuid:id>/', edit_product_ajax, name='edit_product_ajax'),
+    path('get-product-json/<uuid:product_id>/', get_product_json, name='get_product_json'),
+    path('login-ajax', login_ajax, name='login-ajax'),
+    path('register-ajax', register_ajax, name='register-ajax'), 
+    path('product/delete-ajax/<str:id>/', delete_product_ajax, name='delete_product_ajax'),   
 ]
